@@ -1,7 +1,8 @@
 import requests
-from credentials import TOKEN
+from tween.credentials import TOKEN
 import json
 import pandas as pd
+import plotly.express as px
 
 def count_tweets(key_value: str):
   key_value = key_value.replace(' ', '%20')
@@ -16,6 +17,10 @@ def count_tweets(key_value: str):
 
   response = requests.request("GET", url, headers=headers, data=payload)
   data = json.loads(response.text)['data']
+  data = pd.json_normalize(data)
+  data['end'] = pd.to_datetime(data.end)
+  data = data.rename(columns={'end': 'Date',
+                              'tweet_count': 'Number of tweets'})
   #print(data)
 
   return data
