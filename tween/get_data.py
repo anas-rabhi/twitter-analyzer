@@ -60,3 +60,15 @@ def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'ho
       data = data + new
 
   return data
+
+def format_tweet_data(data):
+  df = pd.json_normalize(data)
+  df.referenced_tweets = df.referenced_tweets.apply(lambda x: x[0]['type'] if type(x) is list else 'tweet')
+  df.created_at = pd.to_datetime(df.created_at)
+  df = df.drop_duplicates(subset=['created_at', 'author_id', 'text', 'id'])
+  #print(df)
+  return (df.reset_index())
+
+
+#format_tweet_data(tweets_by_subject('senegal'))
+#count_tweets('ASMOL')
