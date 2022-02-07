@@ -29,7 +29,7 @@ def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'ho
   subject = subject.replace(' ', '%20')
   subject = subject.replace('#', '%23')
 
-  if (cnt>=nb_max):
+  if (cnt>int(nb_max)):
     return []
 
   if len(meta_token)!=0:
