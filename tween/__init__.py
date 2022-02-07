@@ -1,1 +1,1 @@
-from .get_data import count_tweets
+from .get_data import *
