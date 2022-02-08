@@ -3,8 +3,13 @@ from tween.credentials import TOKEN
 import json
 import pandas as pd
 import plotly.express as px
+import streamlit as st
 
+woeid = {'France': '23424819', 'USA': '23424977',
+         'UK': '23424975','Spain': '23424950',
+         'Belgium': '23424757', 'Canada': '23424775'}
 
+@st.cache
 def count_tweets(subject: str, granularity: str = 'hour'):
     subject = subject.replace(' ', '%20')
     subject = subject.replace('#', '%23')
@@ -26,7 +31,7 @@ def count_tweets(subject: str, granularity: str = 'hour'):
 
     return data
 
-
+@st.cache(show_spinner=False)
 def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'hour', cnt: int = 1, nb_max=2):
     subject = subject.replace(' ', '%20')
     subject = subject.replace('#', '%23')
@@ -62,7 +67,7 @@ def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'ho
 
     return data
 
-
+@st.cache(show_spinner=False)
 def format_tweet_data(data) -> pd.DataFrame:
     df = pd.json_normalize(data)
     df = df[['author_id', 'referenced_tweets', 'conversation_id', 'source', 'text',
@@ -77,6 +82,27 @@ def format_tweet_data(data) -> pd.DataFrame:
     df = df.drop_duplicates(subset=['created_at', 'author_id', 'text', 'id'])
     # print(df)
     return (df.reset_index())
+
+
+
+@st.cache(show_spinner=False)
+def get_trends(country: str):
+
+    url = f"https://api.twitter.com/1.1/trends/place.json?id={woeid[country]}"
+
+    payload = {}
+    headers = {
+        'Authorization': f'Bearer {TOKEN}'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    if (response.status_code != 200):
+        return []
+
+    data = json.loads(response.text)[0]['trends']
+    trends = [(str(k+1)+ ') '+str(j['name'])) for k, j in enumerate(data)]
+    #[k if (k is not None) else (0) for k in data['tweet_volume']]
+    return trends
 
 # def get_count_reference_by_user(data: pd.DataFrame) -> pd.DataFrame:
 
