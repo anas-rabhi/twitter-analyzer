@@ -4,7 +4,6 @@ import plotly.express as px
 import streamlit as st
 from tween import *
 
-
 if __name__ == '__main__':
     st.set_page_config(layout="wide")
 
@@ -13,16 +12,16 @@ if __name__ == '__main__':
         search_for = st.text_input('Subject')
 
         st.header('Part 1')
-        #c1, c2 = st.columns(2)
+        # c1, c2 = st.columns(2)
         granularity = st.radio("Granularity of the tweets",
                                ('Day', 'Hour', 'Minute'),
                                key='Day')
 
-        if len(search_for)>0:
+        if len(search_for) > 0:
             # count number of tweets
             data = count_tweets(search_for, granularity)
             fig = px.scatter(data, x="Date", y="Number of tweets",
-                       title=f"Number of tweets during last {granularity.lower()}s")
+                             title=f"Number of tweets during last {granularity.lower()}s")
             fig.update_layout(title_yanchor='bottom')
             st.plotly_chart(fig, use_container_width=True)
 
@@ -32,7 +31,7 @@ if __name__ == '__main__':
 
             df = format_tweet_data(tweets_by_subject(subject=search_for, nb_max=twts))
             st.markdown(f'The following metrics are based on the most recent tweets during '
-                    f'the last 7 days')
+                        f'the last 7 days')
             col1, col2, col3 = st.columns(3)
             col1.metric("Min Date", str(df.created_at.min())[:19])
             col2.metric("Max Date", str(df.created_at.max())[:19])
@@ -52,9 +51,10 @@ if __name__ == '__main__':
             type_tweets = round(df.referenced_tweets.value_counts(normalize=True), 2)
             device = round(df.source.value_counts(normalize=True), 2)
 
-            fig2 = px.pie(values=type_tweets, names=[(x.replace('_', ' ')).capitalize() for x in type_tweets.index], title='Type of tweet repartition')
-            fig3 = px.pie(values=device, names=[(x.replace('_', ' ')).capitalize() for x in device.index], title='Device repartition')
+            fig2 = px.pie(values=type_tweets, names=[(x.replace('_', ' ')).capitalize() for x in type_tweets.index],
+                          title='Type of tweet repartition')
+            fig3 = px.pie(values=device, names=[(x.replace('_', ' ')).capitalize() for x in device.index],
+                          title='Device repartition')
             c1b, c2b = st.columns(2)
             c1b.plotly_chart(fig2, use_container_width=True)
             c2b.plotly_chart(fig3, use_container_width=True)
-
