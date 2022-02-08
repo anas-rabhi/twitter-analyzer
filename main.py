@@ -3,13 +3,50 @@ import numpy as np
 import plotly.express as px
 import streamlit as st
 from tween import *
+import plotly.graph_objects as go
+
+def dataframe_px(data: pd.DataFrame):
+    fig = go.Figure(data=[go.Table(
+        columnorder=[1, 2, 3],
+        columnwidth=[200, 300, 900],
+        header=dict(
+            values=[['Username'], ['Type'],
+                    ['Content']],
+            line_color='darkslategray',
+            fill_color='royalblue',
+            align=['left', 'center'],
+            font=dict(color='white', size=12),
+            height=40
+        ),
+        cells=dict(
+            values=[data.username.tolist(), data.referenced_tweets.tolist(), data.text.tolist()],
+            line_color='darkslategray',
+            fill=dict(color=['paleturquoise', 'white']),
+            align=['left', 'center'],
+            font_size=12,
+            height=30)
+    )
+    ])
+    return fig
+
 
 if __name__ == '__main__':
     st.set_page_config(layout="wide")
+    st.header('Explore trends')
+
+    country_list = ['None'] + [k for k, v in woeid.items()]
+    trend = 'None'
+
+    country = st.selectbox('Select trends country :', country_list)
+    if country!='None':
+        trends_list = ['None'] + get_trends(country)
+        trend = st.selectbox('Select trend if you want :', trends_list, index=0)
 
     with st.spinner('Wait for it...'):
         st.title('Metrics by subject')
-        search_for = st.text_input('Subject')
+        if isinstance(trend, str) & (trend!='None'):
+            trend = ''.join((trend.split(' ')[1:]))
+        search_for = st.text_input('Subject', value=trend)
 
         st.header('Part 1')
         # c1, c2 = st.columns(2)
@@ -27,9 +64,17 @@ if __name__ == '__main__':
 
             # add tweets data
             st.header('Advanced Metrics')
-            twts = st.slider('How much tweets do you want to load ? (hundreds)', 0, 15, 2)
 
-            df = format_tweet_data(tweets_by_subject(subject=search_for, nb_max=twts))
+            tweet_type = st.multiselect(
+                'Tweet type filter :',
+                ['tweet', 'retweeted', 'quoted', 'replied_to'],
+                ['tweet', 'retweeted', 'quoted', 'replied_to'])
+
+            twts = st.slider('How much tweets do you want to load ? (hundreds)', 2, 20, 2)
+
+            df_ = format_tweet_data(tweets_by_subject(subject=search_for, nb_max=int(twts)))
+            df = df_[df_.referenced_tweets.isin(tweet_type)]
+
             st.markdown(f'The following metrics are based on the most recent tweets during '
                         f'the last 7 days')
             col1, col2, col3 = st.columns(3)
@@ -46,6 +91,10 @@ if __name__ == '__main__':
                           labels={'x': 'Username',
                                   'y': 'Number of tweets'})
             st.plotly_chart(fig4, use_container_width=True)
+            with st.expander('Tweets content'):
+                st.plotly_chart(dataframe_px(df[['username', 'referenced_tweets', 'text']][
+                                             df.username.isin(user_count.index.get_level_values(0)[:10])].reset_index(
+                    drop=True)), use_container_width=True)
 
             # This dataframe has 244 lines, but 4 distinct values for `day`
             type_tweets = round(df.referenced_tweets.value_counts(normalize=True), 2)
