@@ -6,8 +6,9 @@ import plotly.express as px
 import streamlit as st
 
 woeid = {'France': '23424819', 'USA': '23424977',
-         'UK': '23424975','Spain': '23424950',
+         'UK': '23424975', 'Spain': '23424950',
          'Belgium': '23424757', 'Canada': '23424775'}
+
 
 @st.cache
 def count_tweets(subject: str, granularity: str = 'hour'):
@@ -30,6 +31,7 @@ def count_tweets(subject: str, granularity: str = 'hour'):
     # print(data)
 
     return data
+
 
 @st.cache(show_spinner=False)
 def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'hour', cnt: int = 1, nb_max=2):
@@ -60,15 +62,15 @@ def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'ho
     if ('next_token' in (c := meta)):
         cnt += 1
         new_data, new_users = tweets_by_subject(subject=subject,
-                                meta_token=c['next_token'],
-                                granularity=granularity,
-                                cnt=cnt, nb_max=nb_max)
+                                                meta_token=c['next_token'],
+                                                granularity=granularity,
+                                                cnt=cnt, nb_max=nb_max)
         if len(new_data) > 0:
             data = data + new_data
             users = users + new_users
 
-
     return data, users
+
 
 @st.cache(show_spinner=False)
 def format_tweet_data(data, users) -> pd.DataFrame:
@@ -81,7 +83,7 @@ def format_tweet_data(data, users) -> pd.DataFrame:
     df.rename(columns={'created_at': 'tweet_date', 'id': 'tweet_id'}, inplace=True)
     df = pd.concat([df, df_user], axis=1)
     df['referenced_tweets'] = df['referenced_tweets'].apply(lambda x: x[0]['type'] if type(x) is list else 'tweet')
-    #df['entities.mentions'] = df['entities.mentions'].apply(
+    # df['entities.mentions'] = df['entities.mentions'].apply(
     #    lambda x: x[0]['username'] if type(x) is list else 'User not found')
     df.created_at = pd.to_datetime(df.created_at)
     df.tweet_date = pd.to_datetime(df.tweet_date)
@@ -91,10 +93,8 @@ def format_tweet_data(data, users) -> pd.DataFrame:
     return (df.reset_index(drop=True))
 
 
-
 @st.cache(show_spinner=False)
 def get_trends(country: str):
-
     url = f"https://api.twitter.com/1.1/trends/place.json?id={woeid[country]}"
 
     payload = {}
@@ -107,11 +107,11 @@ def get_trends(country: str):
         return []
 
     data = json.loads(response.text)[0]['trends']
-    trends = [(str(k+1)+ ') '+str(j['name'])) for k, j in enumerate(data)]
-    #[k if (k is not None) else (0) for k in data['tweet_volume']]
+    trends = [(str(k + 1) + ') ' + str(j['name'])) for k, j in enumerate(data)]
+    # [k if (k is not None) else (0) for k in data['tweet_volume']]
     return trends
 
 # def get_count_reference_by_user(data: pd.DataFrame) -> pd.DataFrame:
 
-#print(format_tweet_data(*tweets_by_subject('senegal'),)[['username', 'referenced_tweets']])
+# print(format_tweet_data(*tweets_by_subject('senegal'),)[['username', 'referenced_tweets']])
 # count_tweets('ASMOL')
