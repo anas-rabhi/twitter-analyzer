@@ -5,6 +5,7 @@ import streamlit as st
 from tween import *
 import plotly.graph_objects as go
 
+
 def dataframe_px(data: pd.DataFrame):
     fig = go.Figure(data=[go.Table(
         columnorder=[1, 2, 3],
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     trend = 'None'
 
     country = st.selectbox('Select trends country :', country_list)
-    if country!='None':
+    if country != 'None':
         trends_list = ['None'] + get_trends(country)
         trend = st.selectbox('Select trend if you want :', trends_list, index=0)
     with st.expander('Other options (end date...)'):
@@ -46,7 +47,7 @@ if __name__ == '__main__':
 
     with st.spinner('Wait for it...'):
         st.title('Metrics by subject')
-        if isinstance(trend, str) & (trend!='None'):
+        if isinstance(trend, str) & (trend != 'None'):
             trend = ''.join((trend.split(' ')[1:]))
         search_for = st.text_input('Subject', value=trend)
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
             # count number of tweets
             data = count_tweets(search_for, granularity)
             fig = px.area(data, x="Date", y="Number of tweets",
-                             title=f"Number of tweets during last {granularity.lower()}s")
+                          title=f"Number of tweets during last {granularity.lower()}s")
             fig.update_layout(title_yanchor='bottom')
             st.plotly_chart(fig, use_container_width=True)
 
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 
             twts = st.slider('How much tweets do you want to load ? (hundreds)', 2, 20, 2)
 
-            df_ = format_tweet_data(*tweets_by_subject(subject=search_for, nb_max=int(twts)),)
+            df_ = format_tweet_data(*tweets_by_subject(subject=search_for, nb_max=int(twts)), )
             df = df_[df_.referenced_tweets.isin(tweet_type)].reset_index(drop=True)
 
             st.markdown(f'The following metrics are based on the most recent tweets during '
@@ -95,7 +96,7 @@ if __name__ == '__main__':
             st.plotly_chart(fig4, use_container_width=True)
             with st.expander('Tweets content'):
                 st.plotly_chart(dataframe_px(df[['username', 'referenced_tweets', 'text']][
-                                             df.username.isin(user_count.index.get_level_values(0)[:10])].reset_index(
+                    df.username.isin(user_count.index.get_level_values(0)[:10])].reset_index(
                     drop=True)), use_container_width=True)
 
             # This dataframe has 244 lines, but 4 distinct values for `day`
