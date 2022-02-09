@@ -3,6 +3,7 @@ import numpy as np
 import plotly.express as px
 import streamlit as st
 from tween import *
+import gc
 import plotly.graph_objects as go
 
 
@@ -59,9 +60,13 @@ if __name__ == '__main__':
         if isinstance(trend, str) & (trend != 'None'):
             trend = ''.join((trend.split(' ')[1:]))
 
-        search_for = st.text_input('Subject',
-                                   value=trend
-                                   )
+        if trend != 'None':
+            search_for = st.text_input('Subject',
+                                       value=trend
+                                       )
+        else:
+            search_for = st.text_input('Subject'
+                                       )
 
         st.header('Part 1')
         # c1, c2 = st.columns(2)
@@ -95,12 +100,12 @@ if __name__ == '__main__':
 
             twts = st.slider('How much tweets do you want to load ? (hundreds)',
                              2,
-                             20,
+                             30,
                              2
                              )
 
             df_ = format_tweet_data(*tweets_by_subject(subject=search_for,
-                                                       nb_max=int(twts)),)
+                                                       nb_max=int(twts)), )
             df = df_[df_.referenced_tweets.isin(tweet_type)].reset_index(drop=True)
 
             st.markdown(f'The following metrics are based on the most recent tweets during '
@@ -153,6 +158,25 @@ if __name__ == '__main__':
                             use_container_width=True
                             )
 
+            df_top_users = \
+            df[df.username.isin(user_count.index.get_level_values(0)[:10])].drop_duplicates(subset=['username'])[
+                ['username', 'public_metrics.followers_count', 'verified', 'public_metrics.following_count']]
+            df_top_users.username = df_top_users.username.astype("category")
+            df_top_users.username.cat.set_categories(user_count.index.get_level_values(0)[:10], inplace=True)
+            df_top_users = df_top_users.sort_values(["username"])
+
+            fig5 = px.bar(x=df_top_users.username,
+                          y=df_top_users['public_metrics.followers_count'],
+                          color=df_top_users['public_metrics.following_count'],
+                          color_continuous_scale='solar',
+                          labels={'x': 'Username',
+                                  'y': 'Number of tweets',
+                                  'color': 'Following'}
+                          )
+            st.plotly_chart(fig5,
+                            use_container_width=True
+                            )
+
             with st.expander('Tweets content'):
                 st.plotly_chart(dataframe_px(df[['username', 'referenced_tweets', 'text']][
                     df.username.isin(user_count.index.get_level_values(0)[:10])].reset_index(
@@ -176,3 +200,4 @@ if __name__ == '__main__':
             c1b, c2b = st.columns(2)
             c1b.plotly_chart(fig2, use_container_width=True)
             c2b.plotly_chart(fig3, use_container_width=True)
+            gc.collect()
