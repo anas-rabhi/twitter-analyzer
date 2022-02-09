@@ -132,6 +132,16 @@ if __name__ == '__main__':
                         str(df['username'][df.tweet_date.idxmax()])
                         )
 
+            col1.metric("Most followed user",
+                        str(df['username'][df['public_metrics.followers_count'].idxmax()])
+                        )
+
+            col2.metric("Number of followers",
+                        str(round(df['public_metrics.followers_count'].max())))
+
+            col3.metric("Verified twitter",
+                        str(df['verified'][df['public_metrics.followers_count'].idxmax()])
+                        )
 
             fig4 = px.bar(x=user_count.index.get_level_values(0)[:10],
                           y=user_count[:10],
