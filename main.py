@@ -123,7 +123,7 @@ if __name__ == '__main__':
                         str(df.shape[0])
                         )
 
-            user_count = df[['username', 'referenced_tweets']].value_counts()
+            user_count = df[['username', 'referenced_tweets', 'created_at']].value_counts()
 
             col1.metric("Number of different users",
                         str(len(user_count)))
@@ -151,18 +151,20 @@ if __name__ == '__main__':
             fig4 = px.bar(x=user_count.index.get_level_values(0)[:10],
                           y=user_count[:10],
                           color=user_count.index.get_level_values(1)[:10],
+                          text=list(map(lambda x: str(x)[:19], user_count.index.get_level_values(2)[:10])),
                           labels={'x': 'Username',
-                                  'y': 'Number of tweets'}
+                                  'y': 'Number of tweets',
+                                  'color': 'Tweet type'}
                           )
             st.plotly_chart(fig4,
                             use_container_width=True
                             )
 
             df_top_users = \
-            df[df.username.isin(user_count.index.get_level_values(0)[:10])].drop_duplicates(subset=['username'])[
-                ['username', 'public_metrics.followers_count', 'verified', 'public_metrics.following_count']]
+                df[df.username.isin(user_count.index.get_level_values(0)[:10])].drop_duplicates(subset=['username'])[
+                    ['username', 'public_metrics.followers_count', 'verified', 'public_metrics.following_count']]
             df_top_users.username = df_top_users.username.astype("category")
-            df_top_users.username.cat.set_categories(user_count.index.get_level_values(0)[:10], inplace=True)
+            df_top_users.username = df_top_users.username.cat.set_categories(user_count.index.get_level_values(0)[:10])
             df_top_users = df_top_users.sort_values(["username"])
 
             fig5 = px.bar(x=df_top_users.username,
