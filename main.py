@@ -32,7 +32,7 @@ def dataframe_px(data: pd.DataFrame):
 
 if __name__ == '__main__':
     st.set_page_config(layout="wide")
-    st.header('Explore trends')
+    st.title('Explore trends')
 
     country_list = ['None'] + [k for k, v in woeid.items()]
     trend = 'None'
@@ -41,6 +41,8 @@ if __name__ == '__main__':
     if country!='None':
         trends_list = ['None'] + get_trends(country)
         trend = st.selectbox('Select trend if you want :', trends_list, index=0)
+    with st.expander('Other options (end date...)'):
+        st.markdown('Soon...or not')
 
     with st.spinner('Wait for it...'):
         st.title('Metrics by subject')
@@ -57,7 +59,7 @@ if __name__ == '__main__':
         if len(search_for) > 0:
             # count number of tweets
             data = count_tweets(search_for, granularity)
-            fig = px.scatter(data, x="Date", y="Number of tweets",
+            fig = px.area(data, x="Date", y="Number of tweets",
                              title=f"Number of tweets during last {granularity.lower()}s")
             fig.update_layout(title_yanchor='bottom')
             st.plotly_chart(fig, use_container_width=True)
@@ -72,20 +74,20 @@ if __name__ == '__main__':
 
             twts = st.slider('How much tweets do you want to load ? (hundreds)', 2, 20, 2)
 
-            df_ = format_tweet_data(tweets_by_subject(subject=search_for, nb_max=int(twts)))
-            df = df_[df_.referenced_tweets.isin(tweet_type)]
+            df_ = format_tweet_data(*tweets_by_subject(subject=search_for, nb_max=int(twts)),)
+            df = df_[df_.referenced_tweets.isin(tweet_type)].reset_index(drop=True)
 
             st.markdown(f'The following metrics are based on the most recent tweets during '
                         f'the last 7 days')
             col1, col2, col3 = st.columns(3)
-            col1.metric("Min Date", str(df.created_at.min())[:19])
-            col2.metric("Max Date", str(df.created_at.max())[:19])
+            col1.metric("Min Date", str(df.tweet_date.min())[:19])
+            col2.metric("Max Date", str(df.tweet_date.max())[:19])
             col3.metric("Number of tweets", str(df.shape[0]))
 
             user_count = (df[['username', 'referenced_tweets']].value_counts())
             col1.metric("Number of different users", str(len(user_count)))
             col2.metric("Mean tweets per user", str(user_count.mean())[:4])
-            col3.metric("Median tweets per user", str(user_count.median())[:4])
+            col3.metric("First tweet by", str(df['username'][df.tweet_date.idxmax()]))
             fig4 = px.bar(x=user_count.index.get_level_values(0)[:10], y=user_count[:10],
                           color=user_count.index.get_level_values(1)[:10],
                           labels={'x': 'Username',
