@@ -5,7 +5,7 @@ import streamlit as st
 from tween import *
 import gc
 import plotly.graph_objects as go
-
+from time import time
 
 def dataframe_px(data: pd.DataFrame):
     fig = go.Figure(data=[go.Table(
@@ -33,6 +33,7 @@ def dataframe_px(data: pd.DataFrame):
 
 
 if __name__ == '__main__':
+    s = time()
     st.set_page_config(layout="wide")
 
     st.title('Explore trends')
@@ -203,3 +204,4 @@ if __name__ == '__main__':
             c1b.plotly_chart(fig2, use_container_width=True)
             c2b.plotly_chart(fig3, use_container_width=True)
             gc.collect()
+            st.markdown(f'Time to compute all this : {time()-s}')
