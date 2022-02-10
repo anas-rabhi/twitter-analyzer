@@ -4,12 +4,8 @@ import json
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-
-woeid = {'France': '23424819', 'USA': '23424977',
-         'UK': '23424975', 'Spain': '23424950',
-         'Belgium': '23424757', 'Canada': '23424775'}
-
-
+from tween import *
+ 
 @st.cache
 def count_tweets(subject: str, granularity: str = 'hour'):
     subject = subject.replace(' ', '%20')
