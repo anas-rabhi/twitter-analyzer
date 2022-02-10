@@ -59,10 +59,10 @@ def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'ho
     meta = json.loads(response.text)['meta']
     users = json.loads(response.text)['includes']['users']
 
-    if ('next_token' in (c := meta)):
+    if ('next_token' in (meta)):
         cnt += 1
         new_data, new_users = tweets_by_subject(subject=subject,
-                                                meta_token=c['next_token'],
+                                                meta_token=meta['next_token'],
                                                 granularity=granularity,
                                                 cnt=cnt, nb_max=nb_max)
         if len(new_data) > 0:
