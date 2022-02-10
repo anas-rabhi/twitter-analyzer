@@ -4,7 +4,6 @@ import plotly.express as px
 import streamlit as st
 from tween import *
 import gc
-import plotly.graph_objects as go
 from time import time
 
 if __name__ == '__main__':
