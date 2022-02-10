@@ -1,0 +1,17 @@
+version: '3.2'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8051:8051
+    # create a shared space between host and container
+    volumes:
+      - ./:/twitter-analyzer/
+    # command started into the container, here we execute an uvicorn server, for more detail check FastAPI docs
+    command: "streamlit run main.py --server.port 8051"
+
+networks:
+  default:
