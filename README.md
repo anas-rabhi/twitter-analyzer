@@ -4,8 +4,7 @@ The purpose of this application is to provide information on trending topics (or
 
 ## Getting started
 
-To run this app you must your Token (provided by [twitter](https://developer.twitter.com/en/docs/twitter-api)
-) key inside *credentials.py* file. 
+To run this app enter your Token key inside *credentials.py* file (ask for it: [twitter API](https://developer.twitter.com/en/docs/twitter-api).
 
 Shell command to run the app : 
 ````shell
