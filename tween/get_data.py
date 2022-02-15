@@ -4,8 +4,12 @@ import json
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from tween import *
- 
+
+woeid = {'France': '23424819', 'USA': '23424977',
+         'UK': '23424975', 'Spain': '23424950',
+         'Belgium': '23424757', 'Canada': '23424775'}
+
+
 @st.cache
 def count_tweets(subject: str, granularity: str = 'hour'):
     subject = subject.replace(' ', '%20')
@@ -18,14 +22,14 @@ def count_tweets(subject: str, granularity: str = 'hour'):
         'Authorization': f'Bearer {TOKEN}'
     }
 
-    response = requests.request("GET", 
-                                url, 
-                                headers=headers, 
+    response = requests.request("GET",
+                                url,
+                                headers=headers,
                                 data=payload)
-    
+
     data = json.loads(response.text)['data']
     data = pd.json_normalize(data)
-    
+
     data['end'] = pd.to_datetime(data.end)
     data = data.rename(columns={'end': 'Date',
                                 'tweet_count': 'Number of tweets'})
@@ -77,30 +81,30 @@ def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'ho
 def format_tweet_data(data, users) -> pd.DataFrame:
     df = pd.json_normalize(data)
     df_user = pd.json_normalize(users)
-    
-    df = df[['author_id', 'referenced_tweets', 
+
+    df = df[['author_id', 'referenced_tweets',
              'conversation_id', 'source', 'text',
-             'created_at', 'id', 
+             'created_at', 'id',
              'public_metrics.retweet_count',
-             'public_metrics.reply_count', 
+             'public_metrics.reply_count',
              'public_metrics.like_count',
              'public_metrics.quote_count']]
-   
-    df.rename(columns={'created_at': 'tweet_date', 
-                       'id': 'tweet_id'}, 
+
+    df.rename(columns={'created_at': 'tweet_date',
+                       'id': 'tweet_id'},
               inplace=True)
-    
+
     df = pd.concat([df, df_user], axis=1)
-    
+
     df['referenced_tweets'] = df['referenced_tweets'].apply(lambda x: x[0]['type'] if type(x) is list else 'tweet')
     df.created_at = pd.to_datetime(df.created_at)
     df.tweet_date = pd.to_datetime(df.tweet_date)
     df.sort_values(by=['tweet_date'])
-    df = df.drop_duplicates(subset=['tweet_date', 
-                                    'author_id', 
-                                    'text', 
+    df = df.drop_duplicates(subset=['tweet_date',
+                                    'author_id',
+                                    'text',
                                     'id'])
-    
+
     # print(df)
     return (df.reset_index(drop=True))
 

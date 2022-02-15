@@ -1,9 +1,6 @@
 from .get_data import *
 import plotly.graph_objects as go
 
-woeid = {'France': '23424819', 'USA': '23424977',
-         'UK': '23424975', 'Spain': '23424950',
-         'Belgium': '23424757', 'Canada': '23424775'}
 
 def dataframe_px(data: pd.DataFrame):
     fig = go.Figure(data=[go.Table(
