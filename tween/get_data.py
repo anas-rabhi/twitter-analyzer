@@ -4,12 +4,8 @@ import json
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-
-woeid = {'France': '23424819', 'USA': '23424977',
-         'UK': '23424975', 'Spain': '23424950',
-         'Belgium': '23424757', 'Canada': '23424775'}
-
-
+from tween import *
+ 
 @st.cache
 def count_tweets(subject: str, granularity: str = 'hour'):
     subject = subject.replace(' ', '%20')
@@ -22,9 +18,14 @@ def count_tweets(subject: str, granularity: str = 'hour'):
         'Authorization': f'Bearer {TOKEN}'
     }
 
-    response = requests.request("GET", url, headers=headers, data=payload)
+    response = requests.request("GET", 
+                                url, 
+                                headers=headers, 
+                                data=payload)
+    
     data = json.loads(response.text)['data']
     data = pd.json_normalize(data)
+    
     data['end'] = pd.to_datetime(data.end)
     data = data.rename(columns={'end': 'Date',
                                 'tweet_count': 'Number of tweets'})
@@ -76,19 +77,30 @@ def tweets_by_subject(subject: str, meta_token: str = '', granularity: str = 'ho
 def format_tweet_data(data, users) -> pd.DataFrame:
     df = pd.json_normalize(data)
     df_user = pd.json_normalize(users)
-    df = df[['author_id', 'referenced_tweets', 'conversation_id', 'source', 'text',
-             'created_at', 'id', 'public_metrics.retweet_count',
-             'public_metrics.reply_count', 'public_metrics.like_count',
+    
+    df = df[['author_id', 'referenced_tweets', 
+             'conversation_id', 'source', 'text',
+             'created_at', 'id', 
+             'public_metrics.retweet_count',
+             'public_metrics.reply_count', 
+             'public_metrics.like_count',
              'public_metrics.quote_count']]
-    df.rename(columns={'created_at': 'tweet_date', 'id': 'tweet_id'}, inplace=True)
+   
+    df.rename(columns={'created_at': 'tweet_date', 
+                       'id': 'tweet_id'}, 
+              inplace=True)
+    
     df = pd.concat([df, df_user], axis=1)
+    
     df['referenced_tweets'] = df['referenced_tweets'].apply(lambda x: x[0]['type'] if type(x) is list else 'tweet')
-    # df['entities.mentions'] = df['entities.mentions'].apply(
-    #    lambda x: x[0]['username'] if type(x) is list else 'User not found')
     df.created_at = pd.to_datetime(df.created_at)
     df.tweet_date = pd.to_datetime(df.tweet_date)
     df.sort_values(by=['tweet_date'])
-    df = df.drop_duplicates(subset=['tweet_date', 'author_id', 'text', 'id'])
+    df = df.drop_duplicates(subset=['tweet_date', 
+                                    'author_id', 
+                                    'text', 
+                                    'id'])
+    
     # print(df)
     return (df.reset_index(drop=True))
 
@@ -103,12 +115,13 @@ def get_trends(country: str):
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
+
     if (response.status_code != 200):
         return []
 
     data = json.loads(response.text)[0]['trends']
     trends = [(str(k + 1) + ') ' + str(j['name'])) for k, j in enumerate(data)]
-    # [k if (k is not None) else (0) for k in data['tweet_volume']]
+
     return trends
 
 # def get_count_reference_by_user(data: pd.DataFrame) -> pd.DataFrame:
